@@ -15,7 +15,9 @@ class CreateMeasurementsTable extends Migration
     {
         Schema::create('measurements', function (Blueprint $table) {
             $table->id();
-            $table->string('title')->unique()->index('measurement_title');
+            $table->string('name')->unique()->index('store_name_index');
+            $table->string('address')->nullable();
+            $table->string('mobile_no')->nullable();
             $table->string('status')->default('ACTIVE');
             $table->softDeletes();
             $table->timestamps();

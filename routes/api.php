@@ -81,12 +81,22 @@ Route::group([
         Route::post('user/change_password', 'API\AdminController@changePassword');
 
 
-        Route::resource('roles', 'API\RoleController');
+        Route::apiResources([
+            'roles' => \API\RoleController::class,
+            'permissions' => \API\PermissionController::class,
+            'merchants' => \API\MerchantController::class,
+            'measurements' => \API\MeasurementController::class,
+            'stores' => \API\CommonController::class,
+            'admins' => \API\AdminController::class,
+            'users' => \API\UserController::class,
+        ]);
+        /*Route::resource('roles', 'API\RoleController');
         Route::resource('permissions', 'API\PermissionController');
         Route::resource('merchants', 'API\MerchantController');
         Route::resource('measurements', 'API\MeasurementController');
+        Route::resource('stores', 'API\StoreController');
         Route::resource('admins', 'API\AdminController');
-        Route::resource('users', 'API\UserController');
+        Route::resource('users', 'API\UserController');*/
 
         Route::get('payment/all', 'API\PaymentController@allPayments');
         Route::post('download_report', 'API\PaymentController@downloadReport');
