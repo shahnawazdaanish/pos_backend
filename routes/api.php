@@ -85,11 +85,14 @@ Route::group([
             'roles' => \API\RoleController::class,
             'permissions' => \API\PermissionController::class,
             'merchants' => \API\MerchantController::class,
-            'measurements' => \API\MeasurementController::class,
+            'measurements' => \API\CommonController::class,
+            'inventories' => \API\CommonController::class,
             'stores' => \API\CommonController::class,
+            'products' => \API\CommonController::class,
             'admins' => \API\AdminController::class,
             'users' => \API\UserController::class,
         ]);
+
         /*Route::resource('roles', 'API\RoleController');
         Route::resource('permissions', 'API\PermissionController');
         Route::resource('merchants', 'API\MerchantController');
@@ -97,6 +100,8 @@ Route::group([
         Route::resource('stores', 'API\StoreController');
         Route::resource('admins', 'API\AdminController');
         Route::resource('users', 'API\UserController');*/
+
+        Route::get('utility/get_units', 'API\UtilityController@getUnits');
 
         Route::get('payment/all', 'API\PaymentController@allPayments');
         Route::post('download_report', 'API\PaymentController@downloadReport');

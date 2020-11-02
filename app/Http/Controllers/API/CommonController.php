@@ -18,11 +18,11 @@ class CommonController extends Controller
     {
         $uri = request()->route()->uri();
         $uri_arr = explode('/', $uri);
-        $perm_identifier = str_replace(['{', '}'], ['',''],$uri_arr[count($uri_arr) - 1] ?? "");
+        $perm_identifier = str_replace(['{', '}'], ['', ''], $uri_arr[count($uri_arr) - 1] ?? "");
         $perm_identifier = substr($perm_identifier, -1) == 's' ? $perm_identifier : $perm_identifier . 's';
 
         $this->classTitle = ucwords(substr($perm_identifier, 0, strlen($perm_identifier) - 1));
-        $this->model = '\\App\\'.$this->classTitle;
+        $this->model = '\\App\\' . $this->classTitle;
         $this->page = $perm_identifier;
 
         $this->loadParam = $this->loadCreateUpdateParameters();
@@ -42,7 +42,7 @@ class CommonController extends Controller
     public function index()
     {
         // return Response::json(request()->route(), 200);
-        $action = "SHOW ". $this->page;
+        $action = "SHOW " . $this->page;
         try {
             $search = request()->get("search");
             $isPaging = request()->exists("page");
@@ -52,6 +52,15 @@ class CommonController extends Controller
             // If admin searches for any name
             if (!empty($search)) {
                 $model = $model->whereName($search);
+            }
+
+            if (isset($this->loadParam['read'])) {
+                if(isset($this->loadParam['read']['with'])) {
+                    $withs = explode(',', $this->loadParam['read']['with']);
+                    foreach ($withs as $with) {
+                        $model = $model->with($with);
+                    }
+                }
             }
 
             // Provide based on paging or not
@@ -65,10 +74,10 @@ class CommonController extends Controller
 
             // If permission has data
             if ($model) {
-                $this->lg($this->page.' list shown', 'info', $action, 200);
+                $this->lg($this->page . ' list shown', 'info', $action, 200);
                 return response()->json($model);
             } else {
-                $this->lg($this->page.' list not found', 'warning', $action, 404);
+                $this->lg($this->page . ' list not found', 'warning', $action, 404);
                 return response()->json("Not found", 404);
             }
         } catch (\Exception $e) {
@@ -90,16 +99,16 @@ class CommonController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
         // return Response::json(request()->route(), 200);
-        $action = "ADD ".$this->page;
+        $action = "ADD " . $this->page;
 
         // Validating request
-        if(!isset($this->loadParam['create'])) {
+        if (!isset($this->loadParam['create'])) {
             $this->lg('No validation has been set for inputs', 'warning', $action, 422);
             return response()->json('No validation has been set for inputs', 422);
         }
@@ -109,20 +118,33 @@ class CommonController extends Controller
         try {
             $model = new $this->model();
 
-            foreach ($this->loadParam['create'] as $key => $value){
-                if($request->has($key)) {
-                    $model->$key = strip_tags($request->get($key));
+            foreach ($this->loadParam['create'] as $key => $value) {
+                if ($request->has($key)) {
+                    if(is_string($request->get($key))) {
+                        $value = strip_tags($request->get($key));
+                        if ($value == "0") {
+                            $value = 0;
+                        }
+                        $model->$key = $value;
+                    }
+                    if(is_array($request->get($key))) {
+                        if(isset($request->get($key)['id'])) {
+                            $model->$key = $request->get($key)['id'];
+                        } else {
+                            $model->$key = json_encode($request->get($key));
+                        }
+                    }
                 }
             }
             // $store->title = strip_tags($request->get('title'));
 
             $model->save();
             if ($model) {
-                $this->lg($this->classTitle.' created successfully, measurement: ' . json_encode($model), 'info', $action, 201);
+                $this->lg($this->classTitle . ' created successfully, measurement: ' . json_encode($model), 'info', $action, 201);
                 return response()->json($model, 201);
             } else {
-                $this->lg($this->classTitle.' cannot be added now, try contacting admin', 'warning', $action, 422);
-                return response()->json($this->classTitle.' cannot be added now, try contacting admin', 422);
+                $this->lg($this->classTitle . ' cannot be added now, try contacting admin', 'warning', $action, 422);
+                return response()->json($this->classTitle . ' cannot be added now, try contacting admin', 422);
             }
         } catch (\Exception $e) {
             $this->lg($e, 'error', $action, 500);
@@ -133,7 +155,7 @@ class CommonController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function show($id)
@@ -144,7 +166,7 @@ class CommonController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
@@ -155,18 +177,18 @@ class CommonController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, $id)
     {
-        // return Response::json(request()->route(), 200);
-        $action = "UPDATE ".$this->page;
+//         return Response::json(request()->all(), 200);
+        $action = "UPDATE " . $this->page;
 
 
         // Validating request
-        if(!isset($this->loadParam['update'])) {
+        if (!isset($this->loadParam['update'])) {
             $this->lg('No validation has been set for inputs', 'warning', $action, 422);
             return response()->json('No validation has been set for inputs', 422);
         }
@@ -176,10 +198,23 @@ class CommonController extends Controller
             $model = $this->model::query()->find($id);
             if ($model) {
 
-                foreach ($this->loadParam['update'] as $key => $value){
-                    if($request->has($key)) {
+                foreach ($this->loadParam['update'] as $key => $value) {
+                    if ($request->has($key)) {
                         if (!empty($request->get($key))) {
-                            $model->$key = strip_tags($request->get($key));
+                            if(is_string($request->get($key))) {
+                                $value = strip_tags($request->get($key));
+                                if ($value === "0") {
+                                    $value = 0;
+                                }
+                                $model->$key = $value;
+                            }
+                            if(is_array($request->get($key))) {
+                                if(isset($request->get($key)['id'])) {
+                                    $model->$key = $request->get($key)['id'];
+                                } else {
+                                    $model->$key = json_encode($request->get($key));
+                                }
+                            }
                         }
                     }
                 }
@@ -187,7 +222,7 @@ class CommonController extends Controller
                 $model->save();
 
                 if ($model) {
-                    $this->lg($this->classTitle." information updated successfully", 'info', $action, 200);
+                    $this->lg($this->classTitle . " information updated successfully", 'info', $action, 200);
                     return response()->json($model, 200);
                 } else {
                     $this->lg("Update fails, contact admin", 'warning', $action, 422);
@@ -195,8 +230,8 @@ class CommonController extends Controller
 
                 }
             } else {
-                $this->lg($this->classTitle." information not found", 'warning', $action, 422);
-                return response()->json($this->classTitle." information not found", 404);
+                $this->lg($this->classTitle . " information not found", 'warning', $action, 422);
+                return response()->json($this->classTitle . " information not found", 404);
             }
         } catch (\Exception $e) {
             $this->lg($e, 'error', $action, 500);
@@ -207,12 +242,12 @@ class CommonController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($id)
     {
-        $action = "DELETE ".$this->page;
+        $action = "DELETE " . $this->page;
         try {
             $model = $this->model::query()->find($id);
             if ($model) {
@@ -221,8 +256,8 @@ class CommonController extends Controller
                     $this->lg("Successfully deleted", 'info', $action, 200);
                     return response()->json("Successfully deleted", 200);
                 } else {
-                    $this->lg("Could not delete the ".$this->page, 'warning', $action, 422);
-                    return response()->json("Could not delete the ".$this->page, 422);
+                    $this->lg("Could not delete the " . $this->page, 'warning', $action, 422);
+                    return response()->json("Could not delete the " . $this->page, 422);
                 }
             } else {
                 $this->lg($this->page . " cannot be found by this ID", 'warning', $action, 404);
@@ -235,8 +270,8 @@ class CommonController extends Controller
     }
 
 
-
-    public function loadCreateUpdateParameters() {
+    public function loadCreateUpdateParameters()
+    {
         $params = [
             'stores' => [
                 'create' => [
@@ -248,13 +283,38 @@ class CommonController extends Controller
                 'update' => [
                     'address' => 'required',
                     'mobile_no' => 'required',
-                    'status' => 'required'
+                    'status' => 'required',
+                ]
+            ],
+            'measurements' => [
+                'create' => [
+                    'title' => 'required',
+                    'allow_fraction' => 'required',
+                ],
+                'update' => [
+                    'title' => 'required',
+                    'allow_fraction' => 'required',
+                ]
+            ],
+            'products' => [
+                'read' => [
+                    'with' => 'unit'
+                ],
+                'create' => [
+                    'title' => 'required',
+                    'brand' => 'required',
+                    'unit' => 'required'
+                ],
+                'update' => [
+                    'title' => 'required',
+                    'brand' => 'required',
+                    'unit' => 'required'
                 ]
             ]
         ];
 
         $page = $this->page;
-        if($page) {
+        if ($page) {
             return $params[$page];
         } else {
             return [];
