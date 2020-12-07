@@ -69,6 +69,8 @@ class AdminController extends Controller
                 $token->save();
 
                 return response()->json([
+                    'user' => $user,
+                    'store' => $user->store(),
                     'token' => $tokenResult->accessToken,
                     'token_type' => 'Bearer',
                     'user_type' => 'admin',
