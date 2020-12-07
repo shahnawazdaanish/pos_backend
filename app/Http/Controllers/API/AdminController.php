@@ -71,7 +71,6 @@ class AdminController extends Controller
 
                 return response()->json([
                     'user' => $user,
-                    'store' => $user->store(),
                     'token' => $tokenResult->accessToken,
                     'token_type' => 'Bearer',
                     'user_type' => 'admin',

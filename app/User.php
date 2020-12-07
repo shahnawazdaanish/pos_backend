@@ -47,9 +47,6 @@ class User extends Authenticatable
         return Carbon::parse($date->getTimestamp(), $date->getTimezone())->format('Y-m-d H:i:s');
     }
 
-    function store() {
-        return $this->belongsTo(Store::class, "store_id");
-    }
 
 
     function merchant() {
