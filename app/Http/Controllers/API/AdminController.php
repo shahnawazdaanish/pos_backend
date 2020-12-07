@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
@@ -349,5 +350,17 @@ class AdminController extends Controller
             Log::error($e);
             return response()->json($this->experDifficulties, 500);
         }
+    }
+
+    public function sync(Request $request) {
+        $validation = Validator::make($request->all(), [
+           'table' => 'required'
+        ]);
+
+        if($validation->fails()) {
+            return response()->json("Table name is required", 422);
+        }
+
+        return response()->json(DB::table($request->input("table"))->get(), 200);
     }
 }

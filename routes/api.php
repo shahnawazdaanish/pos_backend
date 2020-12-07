@@ -77,6 +77,8 @@ Route::group([
         'middleware' => ['auth:admin_api']
     ], function(){
 
+        Route::post('/sync', 'API\AdminController@sync');
+
         Route::get('user/me', 'API\AdminController@user');
         Route::post('user/change_password', 'API\AdminController@changePassword');
 
