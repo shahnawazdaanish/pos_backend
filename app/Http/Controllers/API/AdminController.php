@@ -41,6 +41,7 @@ class AdminController extends Controller
         $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
+            'store_id' => 'nullable|numeric',
             'remember' => 'boolean'
         ]);
 
@@ -55,6 +56,17 @@ class AdminController extends Controller
                 return response()->json([
                     'message' => 'Unable to login! Please check your credentials'
                 ], 401);
+            }
+
+            // Store Checking
+            if(!empty($request->get("store_id"))) {
+                if(auth()->guard("admin_apu")->user->store_id == $request->get("store_id")) {
+                    // pass
+                } else {
+                    return response()->json([
+                        'message' => 'Unable to login! Please check your store'
+                    ], 401);
+                }
             }
 
 
