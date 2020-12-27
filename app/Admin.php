@@ -60,4 +60,8 @@ class Admin extends Authenticatable
             'status'
         ]);
     }
+
+    public function store(){
+        return $this->hasOne(Store::class);
+    }
 }
