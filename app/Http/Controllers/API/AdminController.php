@@ -60,7 +60,7 @@ class AdminController extends Controller
 
             // Store Checking
             if(!empty($request->get("store_id"))) {
-                if(auth()->guard("admin_apu")->user->store_id == $request->get("store_id")) {
+                if(auth()->guard("admin_api")->user->store_id == $request->get("store_id")) {
                     // pass
                 } else {
                     return response()->json([
@@ -86,6 +86,7 @@ class AdminController extends Controller
                     'token' => $tokenResult->accessToken,
                     'token_type' => 'Bearer',
                     'user_type' => 'admin',
+                    'store' => $user->store_id ?? 0,
                     'expires_at' => Carbon::parse(
                         $tokenResult->token->expires_at
                     )->toDateTimeString()
