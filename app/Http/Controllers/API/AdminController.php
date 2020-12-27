@@ -60,7 +60,7 @@ class AdminController extends Controller
 
             // Store Checking
             if(!empty($request->get("store_id"))) {
-                if(auth()->guard("admin_api")->user->store_id == $request->get("store_id")) {
+                if(auth()->guard("admin_api")->user()->store_id == $request->get("store_id")) {
                     // pass
                 } else {
                     return response()->json([
