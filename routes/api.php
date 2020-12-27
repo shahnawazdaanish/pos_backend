@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('merchant-webhook', 'API\WebHookController@addWebHookPayment');
 
+Route::get('/stores', function() {
+   return \Illuminate\Support\Facades\Response::json(\App\Store::query()->select('id', 'name')->get(), 200);
+});
+
 Route::group([
     'prefix' => 'auth'
 ], function () {
