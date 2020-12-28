@@ -88,6 +88,7 @@ class AdminController extends Controller
                     'user_type' => 'admin',
                     'store' => $user->store_id ?? 0,
                     'store_name' => $user->store->name ?? "None",
+//                    'store_logo' => $user->store->logo ?? "None",
                     'expires_at' => Carbon::parse(
                         $tokenResult->token->expires_at
                     )->toDateTimeString()
