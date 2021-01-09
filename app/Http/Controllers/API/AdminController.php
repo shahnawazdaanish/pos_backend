@@ -375,6 +375,8 @@ class AdminController extends Controller
             return response()->json("Table name is required", 422);
         }
 
-        return response()->json(DB::table($request->input("table"))->get(), 200);
+        return response()->json(DB::table($request->input("table"))->get(), 200,
+            ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
+            JSON_UNESCAPED_UNICODE);
     }
 }
