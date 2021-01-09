@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
@@ -371,11 +372,22 @@ class AdminController extends Controller
            'table' => 'required'
         ]);
 
+        $store_id = request()->hasHeader("X-APP-STORE") ? request()->header("X-APP-STORE") : "";
+
         if($validation->fails()) {
             return response()->json("Table name is required", 422);
         }
 
-        return response()->json(DB::table($request->input("table"))->get(), 200,
+        $isColExist = Schema::connection("mysql")->hasColumn($request->input("table"),'store_id');
+
+        $query = DB::table($request->input("table"));
+        if($isColExist){
+            $query->where('store_id',$store_id);
+        }
+
+        $records = $query->get();
+
+        return response()->json($records, 200,
             ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
             JSON_UNESCAPED_UNICODE);
     }
