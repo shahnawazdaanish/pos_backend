@@ -260,6 +260,7 @@ class AdminController extends Controller
             $admin->username = $request->get('username');
             $admin->name = $request->get('name');
             $admin->password = Hash::make($request->get('password'));
+            $admin->store_id = auth()->guard('admin_api')->user()->store_id;
             $admin->save();
 
             if ($admin) {
